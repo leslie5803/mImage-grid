@@ -119,6 +119,13 @@
   bottom: 60px;
   left: 0;
   right: 0;
+  display: -webkit-box;
+  display: -moz-box;
+  -webkit-box-pack: center;
+  -moz-box-pack: center;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+
 }
 .imgs-grid-modal .modal-inner .modal-control {
   position: absolute;
@@ -149,12 +156,13 @@
   background-position: -42px center;
 }
 .imgs-grid-modal .modal-inner .modal-image {
-  position: absolute;
-  top: 0;
-  left: 70px;
-  right: 70px;
-  bottom: 0;
-  text-align: center;
+  position: relative;
+  top: auto;
+  /*left: 70px;*/
+  /*right: 70px;*/
+  bottom: auto;
+  /*text-align: center;*/
+  width:100%;
 }
 .imgs-grid-modal .modal-inner .modal-image:before {
   display: inline-block;
@@ -184,6 +192,7 @@
   .imgs-grid-modal .modal-inner .modal-image {
     left: 0;
     right: 0;
+    width:100%;
   }
 }
 .imgs-grid-modal .modal-indicator {

@@ -106,8 +106,8 @@
                         class: 'image-wrap'
                     }).append(
                         $('<img>', {
-                          src: this.images[i],
-                          load: this.imageLoaded.bind(this)
+                            src: this.images[i],
+                            load: this.imageLoaded.bind(this)
                         })
                     )
                 );
@@ -252,6 +252,8 @@
                 }.bind(this)
             });
 
+            //this.$document.off('keyup', this.keyUp);
+
         };
 
         this.render = function() {
@@ -261,6 +263,9 @@
             this.renderInnerContainer();
             this.renderIndicatorContainer();
 
+            //this.keyUp = this.keyUp.bind(this);
+            //this.$document.on('keyup', this.keyUp);
+
             this.$modal.animate({ opacity: 1 }, { duration: 100 });
 
         };
@@ -269,6 +274,44 @@
             this.$modal = $('<div>', {
                 class: 'imgs-grid-modal'
             }).appendTo('body');
+
+            var distX,
+                startX,
+                self = this,
+                allowedTime = 300,
+                elapsedTime,
+                startTime;
+
+            this.$modal.on('touchstart', function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+
+                var obj   = event.changedTouches || event.originalEvent.changedTouches,
+                    touch = obj[0];
+
+                distX = 0;
+                startX = touch.pageX;
+                startTime = new Date().getTime();
+            });
+
+            this.$modal.on('touchmove', function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            });
+
+            this.$modal.on('touchend', function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+
+                var obj   = event.changedTouches || event.originalEvent.changedTouches,
+                    touch = obj[0];
+
+                distX = touch.pageX - startX;
+                elapsedTime = new Date().getTime() - startTime;
+                if(elapsedTime <= allowedTime){
+                    self.close();
+                }
+            });
         };
 
         this.renderCloseButton = function() {
@@ -296,10 +339,15 @@
 
             var distX,
                 startX,
+                detectX,
+                detectY,
+                cachedX,
+                cachedY,
+                touchStarted = false,
                 self = this,
-                allowedTime = 130,
+                allowedTime = 45,
                 elapsedTime,
-                minDist = 100,
+                minDist = 45,
                 startTime;
 
             this.$modal.find('img').on('touchstart', function (evt) {
@@ -307,9 +355,18 @@
                 evt.stopPropagation();
                 var touch = evt.changedTouches || evt.originalEvent.changedTouches,
                     obj   = touch[0];
+
+                touchStarted = true;
                 distX = 0;
-                startX = obj.pageX;
+                cachedX = startX = detectX = obj.pageX;
+                cachedY = detectY = obj.pageY;
                 startTime = new Date().getTime();
+
+                setTimeout(function () {
+                    if(cachedX === detectX && cachedY === detectY){
+                        self.close();
+                    }
+                }, 200)
             });
 
             this.$modal.find('img').on('touchmove', function (evt) {
@@ -317,6 +374,9 @@
                 evt.preventDefault();
                 var touch = evt.changedTouches || evt.originalEvent.changedTouches,
                     obj   = touch[0];
+
+                detectX = obj.pageX;
+                detectY = obj.pageY;
                 distX = obj.pageX - startX;
                 $(this).css({position: 'relative', left: distX});
             });
@@ -324,6 +384,7 @@
             this.$modal.find('img').on('touchend', function (evt) {
                 evt.stopPropagation();
                 evt.preventDefault();
+                touchStarted = false;
                 elapsedTime = new Date().getTime() - startTime;
                 if(elapsedTime >= allowedTime){
                     if(Math.abs(distX) >= minDist){
@@ -333,7 +394,7 @@
                         this.style.left = '';
                     }
                 }else {
-                    self.close();
+                    this.style.left = '';
                 }
             });
         };
@@ -396,11 +457,32 @@
 
         };
 
+        this.imageClick = function(event) {
+            this.next();
+        };
+
         this.indicatorClick = function(event) {
             var index = $(event.target).data('index');
             this.imageIndex = index;
             this.updateImage();
         };
+
+        this.keyUp = function(event) {
+            if (this.$modal) {
+                switch (event.keyCode) {
+                    case 27: // Esc
+                        this.close();
+                        break;
+                    case 37: // Left arrow
+                        this.prev();
+                        break;
+                    case 39: // Right arrow
+                        this.next();
+                        break;
+                }
+            }
+        };
+
     }
 
 })(jQuery);
